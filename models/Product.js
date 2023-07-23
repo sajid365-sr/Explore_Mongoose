@@ -35,9 +35,8 @@ const productSchema = mongoose.Schema(
       min: [0, "Quantity can't be negative."],
       validate: {
         validator: (value) => {
-
           const isInteger = Number.isInteger(value);
-          
+
           if (isInteger) {
             return true;
           } else {
