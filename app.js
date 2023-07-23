@@ -3,86 +3,59 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const mongoose = require("mongoose");
+const Product = require("./schema/product");
 
 app.use(express.json());
 app.use(cors());
 
-// schema design
-mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please provide a name for this product."],
-    trim: true,
-    unique: [true, "Name must be unique."],
-    minLength: [3, "name must be at least 3 characters long."],
-    maxLength: [100, "name must be at most 100 characters long."],
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: [0, "Price can't be negative."],
-  },
-  unit: {
-    type: String,
-    required: true,
-    enum: {
-      value: ["kg", "litre", "pcs"],
-      message: "unit value can't be {}, value must be kg/litre/pcs",
-    },
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: [0, "Quantity can't be negative."],
-    validate: {
-      validator: (value) => {
-        const isInteger = Number.isInteger(value);
-        if (isInteger) {
-          return true;
-        } else {
-          return false;
-        }
-      },
-    },
-    message: "Quantity must be an integer.",
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: {
-      value: ["in-stock", "out-of-stock", "discontinued"],
-      message: "Status can't be {VALUE}",
-    },
-  },
-  // createdAt: {
-  //   type: Date,
-  //   default: Date.now,
-  // },
-  // updatedAt: {
-  //   type: Date,
-  //   default: Date.now,
-  // }
-  suppplier: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Supplier",
-  },
-  categories: [{
-    name: {
-      type: String,
-      required: true,
-    },
-    _id: mongoose.Schema.Types.ObjectId,
-  }],
-  timestamps: true,
-});
+/* ============================= SCHEMA => MODEL => QUERY ========================== */
 
 app.get("/", (req, res) => {
   res.send("Route is working! YaY!");
+});
+
+// posting to db
+app.post("/api/v1/product", async (req, res) => {
+  try {
+    // instance creation => Do something => save()
+    const product = new Product(req.body);
+    const result = await product.save();
+
+    // another method
+    // const result = await Product.create(req.body)
+    result.testFunction();
+
+    res.status(200).json({
+      status: "success",
+      message: "Data inserted successfuly",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "failed",
+      message: "Data is not inserted",
+      error: error.message,
+    });
+  }
+});
+
+// Get the data
+app.get("/api/v1/product", async (req, res, next) => {
+  try {
+    const products = await Product.find({},"-name -quantity");
+
+    res.send({
+      status: "success",
+      message: "successfully got the data",
+      data: products,
+    });
+  } catch (e) {
+    res.status(400).json({
+      status: "fail",
+      message: "can't get the data",
+      error: e.message,
+    });
+  }
 });
 
 module.exports = app;

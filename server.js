@@ -6,7 +6,7 @@ const colors = require("colors");
 const app = require("./app");
 
 // database connection
-// DBConnect();
+mongoose.connect("mongodb://127.0.0.1:27017/Mongoose")
 
 // server
 const port = process.env.PORT || 8080;
